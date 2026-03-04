@@ -1,51 +1,50 @@
-﻿#include <iostream>
+#include <iostream>
 #include <chrono>
 #include <string>
 #include "matrix.h"
-#include<windows.h>
-
+#include <windows.h>
 
 using namespace std;
 
 int main() {
-    setlocale(LC_ALL, "Russian");
+    setlocale(LC_ALL, ".UTF-8");
     try {
-        string fileA = "matrixA.txt";
-        string fileB =  "matrixB.txt";
+        string fileA = "matrix_500.txt";
+        string fileB = "matrix_500.txt";
         string fileOut = "result.txt";
 
-        cout << "Чтение из матрицы А " << fileA << "...\n";
+        cout << "Reading matrix A from " << fileA << "...\n";
         Matrix A = readMatrixFromFile(fileA);
-        cout << "Чтение из матрицы В " << fileB << "...\n";
+        cout << "Reading matrix B from " << fileB << "...\n";
         Matrix B = readMatrixFromFile(fileB);
 
         if (A.rows() != A.cols() || B.rows() != B.cols()) {
-            cerr << "Матрицы не квадратные\n";
+            cerr << "Matrices are not square\n";
             return 1;
         }
         if (A.rows() != B.rows()) {
-            cerr << "Несовпадение по размеру\n";
+            cerr << "Size mismatch\n";
             return 1;
         }
 
         size_t n = A.rows();
-        cout << "Размер Матриц " << n << " x " << n << "\n";
-        size_t operations = n * n * n; 
-        cout << "Макс число операций: " << operations << "\n";
+        cout << "Matrix size: " << n << " x " << n << "\n";
+        size_t operations = n * n * n;
+        cout << "Max operations: " << operations << "\n";
 
         auto start = chrono::high_resolution_clock::now();
         Matrix C = A * B;
         auto end = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
-        cout << "Время умножения: " << duration.count() << " мкс\n";
+        cout << "Multiplication time: " << duration.count() << " microseconds\n";
 
-        cout << "Результат умножения находится в " << fileOut << "...\n";
+        cout << "Result written to " << fileOut << "...\n";
         writeMatrixToFile(fileOut, C);
 
-        cout << "Программа завершена.\n";
+        cout << "Program finished.\n";
     }
     catch (const exception& e) {
-        cerr << "Ошибка: " << e.what() << endl;
+        cerr << "Error: " << e.what() << endl;
         return 1;
     }
     return 0;
