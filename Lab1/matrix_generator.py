@@ -2,7 +2,7 @@ import numpy as np
 
 np.random.seed(42)
 
-sizes = [100, 500]
+sizes = [2000]
 for n in sizes:
     matrix = np.random.randint(0, 10, (n, n))
     filename = f"matrix_{n}.txt"
