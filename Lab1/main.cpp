@@ -9,8 +9,8 @@ using namespace std;
 int main() {
     setlocale(LC_ALL, ".UTF-8");
     try {
-        string fileA = "matrix_500.txt";
-        string fileB = "matrix_500.txt";
+        string fileA = "matrix_2000.txt";
+        string fileB = "matrix_2000.txt";
         string fileOut = "result.txt";
 
         cout << "Reading matrix A from " << fileA << "...\n";
