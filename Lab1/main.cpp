@@ -1,18 +1,27 @@
+#include <omp.h>
 #include <iostream>
 #include <chrono>
 #include <string>
 #include "matrix.h"
-#include <windows.h>
 
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
     setlocale(LC_ALL, ".UTF-8");
-    try {
-        string fileA = "matrix_2000.txt";
-        string fileB = "matrix_2000.txt";
-        string fileOut = "result.txt";
 
+    if (argc != 5) {
+        cerr << "Usage: " << argv[0] << " <fileA> <fileB> <fileOut> <num_threads>\n";
+        return 1;
+    }
+
+    string fileA = argv[1];
+    string fileB = argv[2];
+    string fileOut = argv[3];
+    int num_threads = atoi(argv[4]);
+
+    omp_set_num_threads(num_threads);
+
+    try {
         cout << "Reading matrix A from " << fileA << "...\n";
         Matrix A = readMatrixFromFile(fileA);
         cout << "Reading matrix B from " << fileB << "...\n";
@@ -29,8 +38,7 @@ int main() {
 
         size_t n = A.rows();
         cout << "Matrix size: " << n << " x " << n << "\n";
-        size_t operations = n * n * n;
-        cout << "Max operations: " << operations << "\n";
+        cout << "Number of threads: " << num_threads << "\n";
 
         auto start = chrono::high_resolution_clock::now();
         Matrix C = A * B;
@@ -38,10 +46,8 @@ int main() {
         auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
         cout << "Multiplication time: " << duration.count() << " microseconds\n";
 
-        cout << "Result written to " << fileOut << "...\n";
         writeMatrixToFile(fileOut, C);
-
-        cout << "Program finished.\n";
+        cout << "Result written to " << fileOut << "\n";
     }
     catch (const exception& e) {
         cerr << "Error: " << e.what() << endl;
