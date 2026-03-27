@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <omp.h>
 
 using namespace std;
 
@@ -95,6 +96,8 @@ Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
         throw std::invalid_argument("Matrix dimensions mismatch for multiplication");
     }
     Matrix result(lhs.rows(), rhs.cols());
+    
+    #pragma omp parallel for
     for (size_t i = 0; i < lhs.rows(); ++i) {
         for (size_t j = 0; j < rhs.cols(); ++j) {
             float sum = 0.0f;
