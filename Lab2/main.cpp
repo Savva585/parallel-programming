@@ -1,57 +1,84 @@
-#include <omp.h>
 #include <iostream>
+#include <fstream>
 #include <chrono>
 #include <string>
-#include "matrix.h"
 
+#include "matrix_math.h"
 using namespace std;
+int main() {
+    setlocale(LC_ALL, "Russian"); 
+    string fileA, fileB, fileOut;
+    const string defA = "dataA.txt";
+    const string defB = "dataB.txt";
+    const string defOut = "output.txt";
 
-int main(int argc, char* argv[]) {
-    setlocale(LC_ALL, ".UTF-8");
 
-    if (argc != 5) {
-        cerr << "Usage: " << argv[0] << " <fileA> <fileB> <fileOut> <num_threads>\n";
+    cout << "Enter matrix A file name [" << defA << "]: ";
+    getline(cin, fileA);
+    if (fileA.empty()) fileA = defA;
+
+    cout << "Enter matrix B file name [" << defB << "]: ";
+    getline(cin, fileB);
+    if (fileB.empty()) fileB = defB;
+
+    cout << "Enter output file name [" << defOut << "]: ";
+    getline(cin, fileOut);
+    if (fileOut.empty()) fileOut = defOut;
+
+    ifstream testA(fileA);
+    if (!testA.is_open()) {
+        cerr << "Error: cannot open file '" << fileA << "'\n";
         return 1;
     }
+    testA.close();
 
-    string fileA = argv[1];
-    string fileB = argv[2];
-    string fileOut = argv[3];
-    int num_threads = atoi(argv[4]);
-
-    omp_set_num_threads(num_threads);
+    ifstream testB(fileB);
+    if (!testB.is_open()) {
+        cerr << "Error: cannot open file '" << fileB << "'\n";
+        return 1;
+    }
+    testB.close();
 
     try {
-        cout << "Reading matrix A from " << fileA << "...\n";
-        Matrix A = readMatrixFromFile(fileA);
-        cout << "Reading matrix B from " << fileB << "...\n";
-        Matrix B = readMatrixFromFile(fileB);
+        cout << "\nReading first matrix from " << fileA << "\n";
+        Matr A = loadMatrix(fileA);
 
-        if (A.rows() != A.cols() || B.rows() != B.cols()) {
-            cerr << "Matrices are not square\n";
+        cout << "Reading second matrix from " << fileB << "\n";
+        Matr B = loadMatrix(fileB);
+
+        if (A.getRows() != A.getCols() || B.getRows() != B.getCols()) {
+            cerr << "Error: both matrices must be square.\n";
             return 1;
         }
-        if (A.rows() != B.rows()) {
-            cerr << "Size mismatch\n";
+        if (A.getRows() != B.getRows()) {
+            cerr << "Error: dimension mismatch. A is " << A.getRows()
+                      << "x" << A.getCols() << ", B is " << B.getRows()
+                      << "x" << B.getCols() << "\n";
             return 1;
         }
 
-        size_t n = A.rows();
+        size_t n = A.getRows();
         cout << "Matrix size: " << n << " x " << n << "\n";
-        cout << "Number of threads: " << num_threads << "\n";
+        size_t totalOps = n * n * n;
+        cout << "Approximate operations count: " << totalOps << "+-1\n";
 
         auto start = chrono::high_resolution_clock::now();
-        Matrix C = A * B;
+        Matr C = mul(A, B);
         auto end = chrono::high_resolution_clock::now();
-        auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
-        cout << "Multiplication time: " << duration.count() << " microseconds\n";
 
-        writeMatrixToFile(fileOut, C);
-        cout << "Result written to " << fileOut << "\n";
-    }
-    catch (const exception& e) {
-        cerr << "Error: " << e.what() << endl;
+        auto elapsedMs = chrono::duration_cast<chrono::milliseconds>(end - start);
+        auto elapsedUs = chrono::duration_cast<chrono::microseconds>(end - start);
+        cout << "Multiplication took: " << elapsedMs.count() << " ms ("
+                  << elapsedUs.count() << " µs)\n";
+
+        cout << "Saving result to " << fileOut << " ...\n";
+        saveMatrix(fileOut, C);
+
+        cout << "Done.\n";
+    } catch (const std::exception& ex) {
+        cerr << "Exception: " << ex.what() << "\n";
         return 1;
     }
+
     return 0;
 }
